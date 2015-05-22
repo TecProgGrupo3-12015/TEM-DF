@@ -1,9 +1,8 @@
 <br>
-
 <div class="col-lg-6 col-md-offset-2">
   <div class="panel panel-default">
     <div class="panel-heading">
-        Editar Conta
+      Editar Conta
     </div>
     <div class="panel-body">
       <% flash.each do |name, msg| %>
@@ -21,17 +20,13 @@
             <%= f.text_field :username, :required => true ,class: "form-control"%>
           </div>
         <% end %>
-
         <div class="form-group">    
           <%= f.label :Email %><br>
           <%= f.text_field :email, :required => true, :pattern => '[^@]+@[^@]+\.[a-zA-Z]{2,6}',class: "form-control" %>
         </div>
-
         <%= f.submit 'Salvar alteração' , class: "btn btn-primary"%> 
         <%= link_to "Alterar Senha", edit_password_path, class: "btn btn-primary" %>
-        
         <% if @user.username != "admin" %>
-
           <%= link_to "Desativar conta", deactivate_account_path ,class: "btn btn-danger" %>
         <% else %>
           <% #nothing to do %>
