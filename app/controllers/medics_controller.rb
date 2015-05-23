@@ -17,10 +17,10 @@ class MedicsController < ApplicationController
 		# Conditional for to return the medic object if the fields are filled     # correctly, else, show alert menssage and go to home. 
 		#if @medics
   	#	@medics
-  		CUSTOM_LOGGER.info("success")
+  		CUSTOM_LOGGER.info("medics results loaded with success")
   	if  !@medics
   		flash.now.alert="Escolha um campo."
-  		CUSTOM_LOGGER.error("empty field")
+  		CUSTOM_LOGGER.error("empty fields on search medics results")
   		render "home/index"
   	end
 	end
@@ -107,7 +107,7 @@ class MedicsController < ApplicationController
 		if !not_exists_user
 			rating_status = ""
 			@rating = Rating.find_by_user_id_and_medic_id(@user.id, @medic.id)
-			CUSTOM_LOGGER.info("not exist user")
+			CUSTOM_LOGGER.info("exist user in rating")
 			# REVIEW: Verify this condidional with average action. Apply the default 
 			# 	behavior. 
 			if @rating
@@ -122,7 +122,7 @@ class MedicsController < ApplicationController
 			redirect_to action:"profile",id: medic_id, notice: rating_status
 		else
 			redirect_to login_path, :alert => "O Usuário necessita estar logado"
-			CUSTOM_LOGGER.error("user not login")
+			CUSTOM_LOGGER.error("user not login for rating in medic")
 		end
 	end
 
@@ -166,12 +166,15 @@ class MedicsController < ApplicationController
 		# setted by user, else, will be created.
 		if exist_comment && !not_exists_user
 				@relevance = Relevance.find_by_user_id_and_comment_id(@user.id, @comment.id)
+				CUSTOM_LOGGER.info("exist user logged and comment on medic")
 				if exist_relevance
 					@relevance.update_attribute(:value, params[:value])
+					CUSTOM_LOGGER.info("exist relevance on comment")
 				else
 					@relevance = Relevance.create(value: params[:value], 
 																				user: @user, 
 																				comment: @comment)
+					CUSTOM_LOGGER.info("not exist relevance on comment")
 				end
 
 			# Redirect profile.	
@@ -179,6 +182,7 @@ class MedicsController < ApplicationController
 		end
 		if not_exists_user
 			redirect_to login_path, :alert => "O Usuário necessita estar logado"
+			CUSTOM_LOGGER("user not loggin for create relevance on comment")
 		else
 			# Nothing to do
 		end
@@ -192,9 +196,9 @@ class MedicsController < ApplicationController
 
 		# Conditional which verify if the comment is reported, case not, his
 		# attibute will be updated.
-		if @comment.report == false
-			CUSTOM_LOGGER.info("not exist report")
+		if !@comment.report
 			@comment.update_attribute(:report, true)
+			CUSTOM_LOGGER.info("not exist report")
 		end
 		flash[:notice] = "Comentário reportado."
 		redirect_to action:"profile",id: params[:medic_id]
@@ -205,6 +209,7 @@ class MedicsController < ApplicationController
 		@medics = Medic.order(average: :desc).limit(10)
 	end
 
+  # REVIEW: This methods privates can be move to modules?
   private 
   # Method to create rating of a medic
 	def create_rating(user, medic)
@@ -222,9 +227,11 @@ class MedicsController < ApplicationController
 		not_exist_grade = grade != NIL_GRADE
 		if !not_exist_grade
 			# Nothing to do
+			CUSTOM_LOGGER.info("exist grade for medic")
     else
     	rating.update_attribute(:grade , grade)
-      rating.update_attribute(:date , Time.current)  
+      rating.update_attribute(:date , Time.current) 
+      CUSTOM_LOGGER.info("not exist grade") 
     end
 	end
 
