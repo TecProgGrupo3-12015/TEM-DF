@@ -15,10 +15,10 @@ class MedicsController < ApplicationController
 													 params[:list_work_unit_name])
 
 		# Conditional for to return the medic object if the fields are filled     # correctly, else, show alert menssage and go to home. 
-		if @medics
-  		@medics
+		#if @medics
+  	#	@medics
   		CUSTOM_LOGGER.info("success")
-  	else
+  	if  !@medics
   		flash.now.alert="Escolha um campo."
   		CUSTOM_LOGGER.error("empty field")
   		render "home/index"
