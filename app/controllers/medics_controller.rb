@@ -182,7 +182,7 @@ class MedicsController < ApplicationController
 		end
 		if not_exists_user
 			redirect_to login_path, :alert => "O Usuário necessita estar logado"
-			CUSTOM_LOGGER("user not loggin for create relevance on comment")
+			CUSTOM_LOGGER.error("user not loggin for create relevance on comment")
 		else
 			# Nothing to do
 		end
@@ -249,8 +249,10 @@ class MedicsController < ApplicationController
 			arithmetic_mean_averange = sum_of_grades_rating / (1.0 * @ratings.size)
 			medic.update_attributes(:average => arithmetic_mean_averang)
 			arithmetic_mean_averange
+			CUSTOM_LOGGER.info("exist rating for medic")
 		else
   		NIL_RATING
+  		CUSTOM_LOGGER.info("not exist rating for medic")
 		end
 	end
 end
