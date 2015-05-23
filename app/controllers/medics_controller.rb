@@ -95,16 +95,18 @@ class MedicsController < ApplicationController
 		@medics_size_speciality
 	end
 	
-	not_exists_user = @user == nil
-	exists_user = @user
+	#not_exists_user = @user == nil
+	#exists_user = @user
 
 	# Method to rating a medic
 	def rating
 		medic_id = params[:medic_id]
 		@user = User.find_by_id(session[:remember_token])
 		@medic = Medic.find_by_id(medic_id)
+		
+		exist_user = @user != nil
 
-		if !not_exists_user
+		if exist_user
 			rating_status = ""
 			@rating = Rating.find_by_user_id_and_medic_id(@user.id, @medic.id)
 			CUSTOM_LOGGER.info("exist user in rating")
@@ -130,7 +132,9 @@ class MedicsController < ApplicationController
 	def create_comment
 		@user = User.find_by_id(session[:remember_token])
 		@medic = Medic.find_by_id(params[:medic_id])
-		if exists_user
+
+		user_not_loggin = @user != nil
+		if user_not_loggin
 			@comment = Comment.new(content: params[:content], 
 														 date: Time.current,
 														 medic: @medic, 
@@ -157,14 +161,15 @@ class MedicsController < ApplicationController
 
 		# Constants used on next conditional, this constants facilitates the
 		# read code.
-		exist_comment = @comment
-		exist_relevance = @relevance
+		exist_comment = @comment != nil
+		exist_relevance = @relevance != nil
+		exist_user = @user != nil
 
 		# Conditional which verify case anybody user is logged, then redirect to  # login and show a alert. 
 		# Else have an user and comment, then get some relevance.
 		# Case have a relevance, then the relevance will be update with the values
 		# setted by user, else, will be created.
-		if exist_comment && !not_exists_user
+		if exist_comment && exist_user
 				@relevance = Relevance.find_by_user_id_and_comment_id(@user.id, @comment.id)
 				CUSTOM_LOGGER.info("exist user logged and comment on medic")
 				if exist_relevance
@@ -180,7 +185,7 @@ class MedicsController < ApplicationController
 			# Redirect profile.	
 			redirect_to action:"profile",id: params[:medic_id]
 		end
-		if not_exists_user
+		if !exist_user
 			redirect_to login_path, :alert => "O Usuário necessita estar logado"
 			CUSTOM_LOGGER.error("user not loggin for create relevance on comment")
 		else
@@ -242,9 +247,9 @@ class MedicsController < ApplicationController
 		@ratings = Rating.all.where(medic_id: medic.id)
 		
 		# REVIEW: Verify the default behavior with the rating action.
-		not_exist_rating = @ratings.size == NIL_RATING
+		exist_rating = @ratings.size != NIL_RATING
 
-		if !not_exist_rating
+		if exist_rating
 			@ratings.each { |rating| sum_of_grades_rating += rating.grade}
 			arithmetic_mean_averange = sum_of_grades_rating / (1.0 * @ratings.size)
 			medic.update_attributes(:average => arithmetic_mean_averang)
