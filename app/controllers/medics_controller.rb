@@ -113,11 +113,11 @@ class MedicsController < ApplicationController
 			if @rating
 				update_rating(@rating , params[:grade])
 				rating_status = 'Avaliação Alterada!'
-				CUSTOM_LOGGER.info("Exist rating")
+				CUSTOM_LOGGER.info("Change rating for medic")
 			else
-				CUSTOM_LOGGER.info("not exist rating")
 				create_rating(@user, @medic)
 				rating_status = 'Avaliação Realizada com sucesso!'
+				CUSTOM_LOGGER.info("rating for medic created with success")
 			end
 			redirect_to action:"profile",id: medic_id, notice: rating_status
 		else
@@ -139,10 +139,10 @@ class MedicsController < ApplicationController
 											       report: false)
 			@comment.save
 			redirect_to profile_path(@medic)
-			CUSTOM_LOGGER.info("exist user")
+			CUSTOM_LOGGER.info("user is logged for comment")
 		else
 			redirect_to login_path, :alert => "O Usuário necessita estar logado"
-			CUSTOM_LOGGER.error("user not login")
+			CUSTOM_LOGGER.error("user not login for comment")
 		end
 	end
 
@@ -169,12 +169,12 @@ class MedicsController < ApplicationController
 				CUSTOM_LOGGER.info("exist user logged and comment on medic")
 				if exist_relevance
 					@relevance.update_attribute(:value, params[:value])
-					CUSTOM_LOGGER.info("exist relevance on comment")
+					CUSTOM_LOGGER.info("update the relevance")
 				else
 					@relevance = Relevance.create(value: params[:value], 
 																				user: @user, 
 																				comment: @comment)
-					CUSTOM_LOGGER.info("not exist relevance on comment")
+					CUSTOM_LOGGER.info("relevance created")
 				end
 
 			# Redirect profile.	
@@ -198,7 +198,7 @@ class MedicsController < ApplicationController
 		# attibute will be updated.
 		if !@comment.report
 			@comment.update_attribute(:report, true)
-			CUSTOM_LOGGER.info("not exist report")
+			CUSTOM_LOGGER.info("comment reported")
 		end
 		flash[:notice] = "Comentário reportado."
 		redirect_to action:"profile",id: params[:medic_id]
@@ -249,7 +249,7 @@ class MedicsController < ApplicationController
 			arithmetic_mean_averange = sum_of_grades_rating / (1.0 * @ratings.size)
 			medic.update_attributes(:average => arithmetic_mean_averang)
 			arithmetic_mean_averange
-			CUSTOM_LOGGER.info("exist rating for medic")
+			CUSTOM_LOGGER.info("create average for medic")
 		else
   		NIL_RATING
   		CUSTOM_LOGGER.info("not exist rating for medic")
