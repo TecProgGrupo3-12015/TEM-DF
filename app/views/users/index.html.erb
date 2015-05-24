@@ -32,9 +32,9 @@
 									</td>
 									<td>										
 										<% if user.account_status == false %>
-										<%= link_to 'Reativar' , reactivate_account_path(user) , class: "btn btn-primary" %>
+											<%= link_to 'Reativar' , reactivate_account_path(user) , class: "btn btn-primary" %>
 										<% else %>
-										<%= link_to 'Desativar' , deactivate_account_admin_path(user) , class: "btn btn-primary" %>
+											<%= link_to 'Desativar' , deactivate_account_admin_path(user) , class: "btn btn-primary" %>
 										<% end %>
 									</td>
 								</tr>
@@ -48,7 +48,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
-        $('#dataTables').dataTable();
-    });
-  </script>
+  $(document).ready(function() {
+    $('#dataTables').dataTable();
+  });
+</script>
