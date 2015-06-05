@@ -140,7 +140,7 @@ class UsersController < ApplicationController
           	redirect_to root_path, notice: "Alteração feita com sucesso"
           	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
         	else
-          	redirect_to edit_password_path, alert: "Confirmação nao confere ou campo vazio"
+          	redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
           	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
         	end
         else
@@ -156,12 +156,12 @@ class UsersController < ApplicationController
   # Method to desactivate a user
   def deactivate
     @user = User.find_by_id(session[:remember_token])
-    # Admin's deactivate
+     # User's deactivate
     if @user && @user.username != "admin"
       @user.update_attribute(:account_status, false)
       redirect_to logout_path
       CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
-    # User's deactivate
+    # Admin's deactivate
     else
       @user = User.find_by_id(params[:id])
       if @user
