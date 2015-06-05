@@ -81,21 +81,8 @@ class UsersController < ApplicationController
   def update
     @user = User.find_by_id(session[:remember_token])
     if @user
-    	# Admin's update
-      if @user.username == "admin" 
-        @email = params[:user][:email]
-        @user_from_email = User.find_by_email(@email)
-        if @user_from_email && @user != @user_from_email
-          flash[:alert] = "Email já existente"
-          render "edit" 
-          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-        else 
-          @user.update_attribute(:email , @email)
-          redirect_to root_path, notice: 'Usuário alterado!'
-          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
-        end
-      # Commom user's update 
-      else 
+    	# Commom user's update 
+      if @user.username != "admin" 
         @username = params[:user][:username]
         @email = params[:user][:email]
         @user_from_username = User.find_by_username(@username)
@@ -115,6 +102,19 @@ class UsersController < ApplicationController
           @user.update_attribute(:username , @username)
           @user.update_attribute(:email , @email)
           redirect_to root_path, notice: "Usuário alterado!"
+          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
+        end
+      # Admin's update
+      else 
+        @email = params[:user][:email]
+        @user_from_email = User.find_by_email(@email)
+        if @user_from_email && @user != @user_from_email
+          flash[:alert] = "Email já existente"
+          render "edit" 
+          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+        else 
+          @user.update_attribute(:email , @email)
+          redirect_to root_path, notice: 'Usuário alterado!'
           CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
         end
       end
