@@ -21,39 +21,43 @@ class UsersController < ApplicationController
   # Method to create a user
   def create
     @user = User.new(user_params)
-    # Check the user type 
     @document = params[:user][:document]
-    if @user.account_status == false && !@document
-      flash.now.alert = "Você precisa anexar um documento!"
-      render "new"
-      CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-    # Check whether the password and password_confirmation are the same
-    elsif @user.password == @user.password_confirmation 
-      @user.account_status = false
+    # Common user create
+    if @user.account_status == true && @user.password == @user.password_confirmation 
+ 			@user.account_status = false
       if @user.save
-        upload @document
-        CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
-        # Check whether the user is common 
-        if @user_params_document == nil
-          # Generate a random number for use it in update password
-          random = Random.new
-          @user.update_attribute(:token_email, random.seed)
-          @user.update_attribute(:medic_type_status, false)
-          TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
-          flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
-          CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
-        # Or a medic user
-        else
-          @user.update_attribute(:medic_type_status, true)
-          flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
-          CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
-        end
-        redirect_to root_path
+        # Generate a random number for use it in update password
+        random = Random.new
+        @user.update_attribute(:token_email, random.seed)
+        @user.update_attribute(:medic_type_status, false)
+        TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
+        flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
+        CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
       else
         render "new"
-        CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
+    # Medic user create
+    elsif @user.account_status == false && @user.password == @user.password_confirmation 
+	    if @user.save	
+	    	#Verify whether document is present
+	    	if @document
+	    		upload @document
+	    		@user.update_attribute(:medic_type_status, true)
+	        flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
+	       	CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
+	      else
+	    		flash.now.alert = "Você precisa anexar um documento!"
+	      	render "new"
+	      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+	      end
+	    else 
+        render "new"
+      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      end
+    # Return error wheter passwords are different
     else
+    	flash.now.alert = "Senhas não conferem"
       render "new"
       CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
     end
