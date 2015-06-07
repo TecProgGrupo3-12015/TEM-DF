@@ -87,13 +87,13 @@ class UsersController < ApplicationController
   # Method to update user's information
   def update
     @user = User.find_by_id(session[:remember_token])
+    @username = params[:user][:username]
+    @email = params[:user][:email]
+    @user_from_username = User.find_by_username(@username)
+    @user_from_email = User.find_by_email(@email)
     if @user
     	# Commom user's update 
       if @user.username != "admin" 
-        @username = params[:user][:username]
-        @email = params[:user][:email]
-        @user_from_username = User.find_by_username(@username)
-        @user_from_email = User.find_by_email(@email)
         # Check if username is in use
         if @user_from_username && @user != @user_from_username
           flash[:alert] = "Nome já existente"
@@ -113,8 +113,6 @@ class UsersController < ApplicationController
         end
       # Admin's update
       else 
-        @email = params[:user][:email]
-        @user_from_email = User.find_by_email(@email)
         if @user_from_email && @user != @user_from_email
           flash[:alert] = "Email já existente"
           render "edit" 
@@ -134,26 +132,26 @@ class UsersController < ApplicationController
   # Method to update user's password
   def update_password
     @user_session = User.find_by_id(session[:remember_token])
+    @user = User.authenticate(@user_session.username, params[:user][:password])
+    @new_password = params[:user][:new_password]
+		@password_confirmation = params[:user][:password_confirmation]
     # Check whether the user is logged
     if @user_session
-        @user = User.authenticate(@user_session.username, params[:user][:password])
-        # Check whether the current password is correct
-        if @user
-        	@new_password = params[:user][:new_password]
-        	@password_confirmation = params[:user][:password_confirmation]
-        	# Check whether new password and confirmation password are the same
-        	if @password_confirmation == @new_password && !@new_password.blank?
-          	@user.update_attribute(:password, @new_password)
-          	redirect_to root_path, notice: "Alteração feita com sucesso"
-          	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
-        	else
-          	redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
-          	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
-        	end
-        else
-        	redirect_to edit_password_path, alert: "Senha errada"
+      # Check whether the current password is correct
+      if @user
+      	# Check whether new password and confirmation password are the same
+      	if @password_confirmation == @new_password && !@new_password.blank?
+        	@user.update_attribute(:password, @new_password)
+        	redirect_to root_path, notice: "Alteração feita com sucesso"
+        	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
+      	else
+        	redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
         	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
-        end
+      	end
+      else
+      	redirect_to edit_password_path, alert: "Senha errada"
+      	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
+      end
     else
       redirect_to edit_password_path
       CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
@@ -220,13 +218,13 @@ class UsersController < ApplicationController
 
     # Method to upload an archive 
     def upload(uploaded_io)
-        if uploaded_io
-          File.open(Rails.root.join('public', 'uploads', 'arquivo_medico'), 'wb') { |file| file.write(uploaded_io.read) }
-          # Send file to temdf email
-          TemdfMailer.request_account.deliver
-          CUSTOM_LOGGER.info("Send email to #{@user.to_yaml}")
-        else 
-          # Nothing to do
-        end
+      if uploaded_io
+        File.open(Rails.root.join('public', 'uploads', 'arquivo_medico'), 'wb') { |file| file.write(uploaded_io.read) }
+        # Send file to temdf email
+        TemdfMailer.request_account.deliver
+        CUSTOM_LOGGER.info("Send email to #{@user.to_yaml}")
+      else 
+        # Nothing to do
+      end
     end
 end
