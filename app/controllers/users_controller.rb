@@ -22,9 +22,12 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     @document = params[:user][:document]
+    @account_status = @user.account_status
+    @password = @user.password
+    @password_confirmation = @user.password_confirmation
     # Common user create
-    if @user.account_status == true && @user.password == @user.password_confirmation 
- 			@user.account_status = false
+    if @account_status == true && @password == @password_confirmation 
+ 			@account_status = false
       if @user.save
         # Generate a random number for use it in update password
         random = Random.new
@@ -38,7 +41,7 @@ class UsersController < ApplicationController
       	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
     # Medic user create
-    elsif @user.account_status == false && @user.password == @user.password_confirmation 
+    elsif @account_status == false && @password == @password_confirmation 
 	    if @user.save	
 	    	#Verify whether document is present
 	    	if @document
