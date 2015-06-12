@@ -21,39 +21,46 @@ class UsersController < ApplicationController
   # Method to create a user
   def create
     @user = User.new(user_params)
-    # Check the user type 
     @document = params[:user][:document]
-    if @user.account_status == false && !@document
-      flash.now.alert = "Você precisa anexar um documento!"
-      render "new"
-      CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-    # Check whether the password and password_confirmation are the same
-    elsif @user.password == @user.password_confirmation 
-      @user.account_status = false
+    @account_status = @user.account_status
+    @password = @user.password
+    @password_confirmation = @user.password_confirmation
+    # Common user create
+    if @account_status == true && @password == @password_confirmation 
+ 			@account_status = false
       if @user.save
-        upload @document
-        CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
-        # Check whether the user is common 
-        if @user_params_document == nil
-          # Generate a random number for use it in update password
-          random = Random.new
-          @user.update_attribute(:token_email, random.seed)
-          @user.update_attribute(:medic_type_status, false)
-          TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
-          flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
-          CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
-        # Or a medic user
-        else
-          @user.update_attribute(:medic_type_status, true)
-          flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
-          CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
-        end
-        redirect_to root_path
+        # Generate a random number for use it in update password
+        random = Random.new
+        @user.update_attribute(:token_email, random.seed)
+        @user.update_attribute(:medic_type_status, false)
+        TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
+        flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
+        CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
       else
         render "new"
-        CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
+    # Medic user create
+    elsif @account_status == false && @password == @password_confirmation 
+	    if @user.save	
+	    	#Verify whether document is present
+	    	if @document
+	    		upload @document
+	    		@user.update_attribute(:medic_type_status, true)
+	        flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
+	       	CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
+	      else
+	    		flash.now.alert = "Você precisa anexar um documento!"
+	      	render "new"
+	      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+	      end
+	    else 
+        render "new"
+      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      end
+    # Return error wheter passwords are different
     else
+    	flash.now.alert = "Senhas não conferem"
       render "new"
       CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
     end
@@ -80,26 +87,13 @@ class UsersController < ApplicationController
   # Method to update user's information
   def update
     @user = User.find_by_id(session[:remember_token])
+    @username = params[:user][:username]
+    @email = params[:user][:email]
+    @user_from_username = User.find_by_username(@username)
+    @user_from_email = User.find_by_email(@email)
     if @user
-    	# Admin's update
-      if @user.username == "admin" 
-        @email = params[:user][:email]
-        @user_from_email = User.find_by_email(@email)
-        if @user_from_email && @user != @user_from_email
-          flash[:alert] = "Email já existente"
-          render "edit" 
-          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-        else 
-          @user.update_attribute(:email , @email)
-          redirect_to root_path, notice: 'Usuário alterado!'
-          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
-        end
-      # Commom user's update 
-      else 
-        @username = params[:user][:username]
-        @email = params[:user][:email]
-        @user_from_username = User.find_by_username(@username)
-        @user_from_email = User.find_by_email(@email)
+    	# Commom user's update 
+      if @user.username != "admin" 
         # Check if username is in use
         if @user_from_username && @user != @user_from_username
           flash[:alert] = "Nome já existente"
@@ -117,6 +111,17 @@ class UsersController < ApplicationController
           redirect_to root_path, notice: "Usuário alterado!"
           CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
         end
+      # Admin's update
+      else 
+        if @user_from_email && @user != @user_from_email
+          flash[:alert] = "Email já existente"
+          render "edit" 
+          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+        else 
+          @user.update_attribute(:email , @email)
+          redirect_to root_path, notice: 'Usuário alterado!'
+          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
+        end
       end
     else
       redirect_to root_path
@@ -127,26 +132,26 @@ class UsersController < ApplicationController
   # Method to update user's password
   def update_password
     @user_session = User.find_by_id(session[:remember_token])
+    @user = User.authenticate(@user_session.username, params[:user][:password])
+    @new_password = params[:user][:new_password]
+		@password_confirmation = params[:user][:password_confirmation]
     # Check whether the user is logged
     if @user_session
-        @user = User.authenticate(@user_session.username, params[:user][:password])
-        # Check whether the current password is correct
-        if @user
-        	@new_password = params[:user][:new_password]
-        	@password_confirmation = params[:user][:password_confirmation]
-        	# Check whether new password and confirmation password are the same
-        	if @password_confirmation == @new_password && !@new_password.blank?
-          	@user.update_attribute(:password, @new_password)
-          	redirect_to root_path, notice: "Alteração feita com sucesso"
-          	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
-        	else
-          	redirect_to edit_password_path, alert: "Confirmação nao confere ou campo vazio"
-          	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
-        	end
-        else
-        	redirect_to edit_password_path, alert: "Senha errada"
+      # Check whether the current password is correct
+      if @user
+      	# Check whether new password and confirmation password are the same
+      	if @password_confirmation == @new_password && !@new_password.blank?
+        	@user.update_attribute(:password, @new_password)
+        	redirect_to root_path, notice: "Alteração feita com sucesso"
+        	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
+      	else
+        	redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
         	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
-        end
+      	end
+      else
+      	redirect_to edit_password_path, alert: "Senha errada"
+      	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
+      end
     else
       redirect_to edit_password_path
       CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
@@ -156,12 +161,12 @@ class UsersController < ApplicationController
   # Method to desactivate a user
   def deactivate
     @user = User.find_by_id(session[:remember_token])
-    # Admin's deactivate
+     # User's deactivate
     if @user && @user.username != "admin"
       @user.update_attribute(:account_status, false)
       redirect_to logout_path
       CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
-    # User's deactivate
+    # Admin's deactivate
     else
       @user = User.find_by_id(params[:id])
       if @user
@@ -213,13 +218,13 @@ class UsersController < ApplicationController
 
     # Method to upload an archive 
     def upload(uploaded_io)
-        if uploaded_io
-          File.open(Rails.root.join('public', 'uploads', 'arquivo_medico'), 'wb') { |file| file.write(uploaded_io.read) }
-          # Send file to temdf email
-          TemdfMailer.request_account.deliver
-          CUSTOM_LOGGER.info("Send email to #{@user.to_yaml}")
-        else 
-          # Nothing to do
-        end
+      if uploaded_io
+        File.open(Rails.root.join('public', 'uploads', 'arquivo_medico'), 'wb') { |file| file.write(uploaded_io.read) }
+        # Send file to temdf email
+        TemdfMailer.request_account.deliver
+        CUSTOM_LOGGER.info("Send email to #{@user.to_yaml}")
+      else 
+        # Nothing to do
+      end
     end
 end
