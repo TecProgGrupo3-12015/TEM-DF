@@ -4,13 +4,15 @@
 # TEM-DF Group.
 # FGA-UnB Faculdade de Engenharias do Gama - Universidade de Brasília.
 class CommentsController < ApplicationController
+	
 	# Method to report a comment
 	def reports
+
 		#Receives an object of class User of current session
 		@user = User.find_by_id(session[:remember_token])
 
-		#checks if the User is admin
-		if @user && @user.username == "admin"
+		# Checks wheter the User is admin
+		if is_user_or_admin_logging?(user)
 			@reported_comments = Comment.all.where(report: true)
 			CUSTOM_LOGGER.info("Showed all users")
 		else
@@ -66,4 +68,14 @@ class CommentsController < ApplicationController
 		flash.now.alert = "Erro, comentario nao encontrado."
 		redirect_to reported_comments_path
 	end
+
+	private
+	def is_user_or_admin_logging?(user)
+		if @user && @user.username == "admin"
+			true
+		else
+			false
+		end
+	end
+
 end
