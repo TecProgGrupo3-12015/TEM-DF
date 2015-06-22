@@ -10,14 +10,9 @@ class CommentsController < ApplicationController
 
 		#Receives an object of class User of current session
 		@user = User.find_by_id(session[:remember_token])
-<<<<<<< HEAD
-		# Checks wheter the User is admin
-		if @user && @user.username == "admin"
-=======
 
 		# Checks wheter the User is admin
 		if is_user_or_admin_logging?(@user)
->>>>>>> dev_tecprog
 			@reported_comments = Comment.all.where(report: true)
 			CUSTOM_LOGGER.info("Showed all users")
 		else
