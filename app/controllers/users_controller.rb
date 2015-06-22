@@ -24,13 +24,13 @@ class UsersController < ApplicationController
     # Common user create
     if @account_status == true && @password == @password_confirmation 
  			@account_status = false
-      test(@user)
+      create_user(@user)
     else
     end
 
     # Medic user create
     if @account_status == false && @password == @password_confirmation 
-	    test2(@user)
+	    create_user_medic(@user)
     else
     end  
     # Return error wheter passwords are different
@@ -70,11 +70,11 @@ class UsersController < ApplicationController
     	# Commom user's update 
       if @user.username != "admin" 
         # Check if username is in use
-        test3_update(@user)
+        user_update(@user)
    
       # Admin's update
       else 
-        test4_update(@user)
+        user_update_two(@user)
       end
     else
       redirect_to root_path
@@ -93,7 +93,7 @@ class UsersController < ApplicationController
       # Check whether the current password is correct
       if @user
       	# Check whether new password and confirmation password are the same
-      	test5_update_password(@user)
+      	update_password(@user)
       else
       	redirect_to edit_password_path, alert: "Senha errada"
       	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
@@ -114,7 +114,7 @@ class UsersController < ApplicationController
       CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
     # Admin's deactivate
     else
-      test6_deactivate(@user)
+      deactive_user(@user)
     end
   end
 
@@ -171,17 +171,18 @@ class UsersController < ApplicationController
     def show_all_users(user)
       if @user && @user.username == "admin" 
         @users = User.all
-        return true
         CUSTOM_LOGGER.info("Showed all users")
+        true
       else
         redirect_to root_path
-        return false
         CUSTOM_LOGGER.info("Failure to showed all users")
+        true
       end
     end
 
-    def test (user)
+    def create_user (user)
         if @user.save
+
         # Generate a random number for use it in update password
         random = Random.new
         @user.update_attribute(:token_email, random.seed)
@@ -196,7 +197,7 @@ class UsersController < ApplicationController
       end
     end
 
-    def test2 (user)
+    def create_user_medic (user)
       if @user.save 
         #Verify whether document is present
         if @document
@@ -215,7 +216,7 @@ class UsersController < ApplicationController
       end
     end
 
-    def test3_update(user)
+    def user_update(user)
        if @user_from_username && @user != @user_from_username
         flash[:alert] = "Nome já existente"
         render "edit"
@@ -234,7 +235,7 @@ class UsersController < ApplicationController
       end
     end
 
-    def test4_update(user)
+    def user_update_two(user)
       if @user_from_email && @user != @user_from_email
         flash[:alert] = "Email já existente"
         render "edit" 
@@ -246,7 +247,7 @@ class UsersController < ApplicationController
       end
     end
 
-    def test5_update_password(user)
+    def update_password(user)
       if @user
         # Check whether new password and confirmation password are the same
         if @password_confirmation == @new_password && !@new_password.blank?
@@ -259,7 +260,7 @@ class UsersController < ApplicationController
         end
     end
 
-    def test6_deactivate(user)
+    def deactive_user(user)
       if @user
         @user.update_attribute(:account_status, false)
         redirect_to(action: "index")
