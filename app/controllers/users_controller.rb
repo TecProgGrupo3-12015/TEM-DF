@@ -25,17 +25,18 @@ class UsersController < ApplicationController
     if @account_status == true && @password == @password_confirmation 
  			@account_status = false
       test(@user)
+    else
+    end
 
     # Medic user create
-    elsif @account_status == false && @password == @password_confirmation 
+    if @account_status == false && @password == @password_confirmation 
 	    test2(@user)
-
-    # Return error wheter passwords are different
     else
+    end  
+    # Return error wheter passwords are different
     	flash.now.alert = "Senhas não conferem"
       render "new"
       CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-    end
   end
 
   # Auxiliar method to create a user
