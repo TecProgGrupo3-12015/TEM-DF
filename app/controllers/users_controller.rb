@@ -71,7 +71,7 @@ class UsersController < ApplicationController
       if @user.username != "admin" 
         # Check if username is in use
         test3_update(@user)
-    a   
+   
       # Admin's update
       else 
         test4_update(@user)
@@ -114,15 +114,7 @@ class UsersController < ApplicationController
       CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
     # Admin's deactivate
     else
-      @user = User.find_by_id(params[:id])
-      if @user
-        @user.update_attribute(:account_status, false)
-        redirect_to(action: "index")
-        CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
-      else
-        redirect_to root_path
-        CUSTOM_LOGGER.info("Failure to deactivate user #{@user.to_yaml}")
-      end
+      test6_deactivate(@user)
     end
   end
 
@@ -265,5 +257,16 @@ class UsersController < ApplicationController
           redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
           CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
         end
+    end
+
+    def test6_deactivate(user)
+      if @user
+        @user.update_attribute(:account_status, false)
+        redirect_to(action: "index")
+        CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
+      else
+        redirect_to root_path
+        CUSTOM_LOGGER.info("Failure to deactivate user #{@user.to_yaml}")
+      end
     end
 end
