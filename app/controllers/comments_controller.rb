@@ -25,14 +25,7 @@ class CommentsController < ApplicationController
 	def deactivate
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if do_exist_comment?(@comment)
-			@comment.update_attribute(:comment_status, false)
-			CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
-		else
-			CUSTOM_LOGGER.info("Failure to deactivate comment #{@comment.to_yaml}")
-			missing_report
-		end
-		redirect_to reported_comments_path
+		report_or_deactive_comment(@comment, false)
 	end
 
 	# Method to reactivate a comment
@@ -53,14 +46,7 @@ class CommentsController < ApplicationController
 	def disable_report
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if do_exist_comment?(@comment)
-			@comment.update_attribute(:report, false)
-			CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
-		else
-			CUSTOM_LOGGER.info("Failure to disable report #{@comment.to_yaml}")
-			missing_report
-		end
-		redirect_to reported_comments_path
+		report_or_deactive_comment(@comment, true)
 	end
 
 	#REVIEW: it would be better to use assert?
@@ -86,4 +72,40 @@ class CommentsController < ApplicationController
 		end
 	end
 
+	def report_or_deactive_comment(comment, is_report)
+		if do_exist_comment?(@comment)
+			if is_report = true
+				@comment.update_attribute(:report, false)
+				CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
+			else
+				@comment.update_attribute(:comment_status, false)
+				CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
+		else
+			CUSTOM_LOGGER.info("Failure to disable report #{@comment.to_yaml}")
+			missing_report
+		end
+		redirect_to reported_comments_path
+
+	end
 end
+
+		@comment = Comment.find_by_id(params[:comment_id])
+		if do_exist_comment?(@comment)
+			@comment.update_attribute(:report, false)
+			CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
+		else
+			CUSTOM_LOGGER.info("Failure to disable report #{@comment.to_yaml}")
+			missing_report
+		end
+		redirect_to reported_comments_path
+
+
+			@comment = Comment.find_by_id(params[:comment_id])
+		if do_exist_comment?(@comment)
+			@comment.update_attribute(:comment_status, false)
+			CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
+		else
+			CUSTOM_LOGGER.info("Failure to deactivate comment #{@comment.to_yaml}")
+			missing_report
+		end
+		redirect_to reported_comments_path
