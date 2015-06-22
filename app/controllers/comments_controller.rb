@@ -88,24 +88,3 @@ class CommentsController < ApplicationController
 
 	end
 end
-
-		@comment = Comment.find_by_id(params[:comment_id])
-		if do_exist_comment?(@comment)
-			@comment.update_attribute(:report, false)
-			CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
-		else
-			CUSTOM_LOGGER.info("Failure to disable report #{@comment.to_yaml}")
-			missing_report
-		end
-		redirect_to reported_comments_path
-
-
-			@comment = Comment.find_by_id(params[:comment_id])
-		if do_exist_comment?(@comment)
-			@comment.update_attribute(:comment_status, false)
-			CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
-		else
-			CUSTOM_LOGGER.info("Failure to deactivate comment #{@comment.to_yaml}")
-			missing_report
-		end
-		redirect_to reported_comments_path
