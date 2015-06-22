@@ -28,22 +28,7 @@ class UsersController < ApplicationController
 
     # Medic user create
     elsif @account_status == false && @password == @password_confirmation 
-	    if @user.save	
-	    	#Verify whether document is present
-	    	if @document
-	    		upload @document
-	    		@user.update_attribute(:medic_type_status, true)
-	        flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
-	       	CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
-	      else
-	    		flash.now.alert = "Você precisa anexar um documento!"
-	      	render "new"
-	      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-	      end
-	    else 
-        render "new"
-      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-      end
+	    test2(@user)
 
     # Return error wheter passwords are different
     else
@@ -240,6 +225,25 @@ class UsersController < ApplicationController
         flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
         CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
       else
+        render "new"
+        CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      end
+    end
+
+    def test2 (user)
+      if @user.save 
+        #Verify whether document is present
+        if @document
+          upload @document
+          @user.update_attribute(:medic_type_status, true)
+          flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
+          CUSTOM_LOGGER.info("User saved and document uploaded #{@user.to_yaml}")
+        else
+          flash.now.alert = "Você precisa anexar um documento!"
+          render "new"
+          CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+        end
+      else 
         render "new"
         CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
