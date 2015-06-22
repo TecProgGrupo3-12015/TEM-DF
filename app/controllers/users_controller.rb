@@ -64,37 +64,17 @@ class UsersController < ApplicationController
     @email = params[:user][:email]
     @user_from_username = User.find_by_username(@username)
     @user_from_email = User.find_by_email(@email)
+
     if @user
+
     	# Commom user's update 
       if @user.username != "admin" 
         # Check if username is in use
-        if @user_from_username && @user != @user_from_username
-          flash[:alert] = "Nome já existente"
-          render "edit"
-          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-        # Check if the email is in use
-        elsif @user_from_email && @user != @user_from_email
-          flash[:alert] = "Email já existente"
-          render "edit" 
-          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-        # If not update attributes
-        else 
-          @user.update_attribute(:username , @username)
-          @user.update_attribute(:email , @email)
-          redirect_to root_path, notice: "Usuário alterado!"
-          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
-        end
+        test3_update(@user)
+      
       # Admin's update
       else 
-        if @user_from_email && @user != @user_from_email
-          flash[:alert] = "Email já existente"
-          render "edit" 
-          CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-        else 
-          @user.update_attribute(:email , @email)
-          redirect_to root_path, notice: 'Usuário alterado!'
-          CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
-        end
+        test4_update(@user)
       end
     else
       redirect_to root_path
@@ -247,6 +227,37 @@ class UsersController < ApplicationController
       else 
         render "new"
         CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
+      end
+    end
+
+    def test3_update(user)
+       if @user_from_username && @user != @user_from_username
+        flash[:alert] = "Nome já existente"
+        render "edit"
+        CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+        # Check if the email is in use
+      elsif @user_from_email && @user != @user_from_email
+        flash[:alert] = "Email já existente"
+        render "edit" 
+        CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+        # If not update attributes
+      else 
+        @user.update_attribute(:username , @username)
+        @user.update_attribute(:email , @email)
+        redirect_to root_path, notice: "Usuário alterado!"
+        CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
+      end
+    end
+
+    def test4_update(user)
+      if @user_from_email && @user != @user_from_email
+        flash[:alert] = "Email já existente"
+        render "edit" 
+        CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+      else 
+        @user.update_attribute(:email , @email)
+        redirect_to root_path, notice: 'Usuário alterado!'
+        CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
       end
     end
 end
