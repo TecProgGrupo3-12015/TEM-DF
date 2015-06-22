@@ -10,7 +10,7 @@ class UsersController < ApplicationController
   def index
     @user = User.find_by_id(session[:remember_token])
 
-    show_all_users(user)
+    show_all_users(@user)
   end
 
   # Method to create a user
@@ -221,14 +221,14 @@ class UsersController < ApplicationController
     private
 
     def show_all_users(user)
-    if @user && @user.username == "admin" 
-      @users = User.all
-      return true
-      CUSTOM_LOGGER.info("Showed all users")
-    else
-      redirect_to root_path
-      return false
-      CUSTOM_LOGGER.info("Failure to showed all users")
-    end
+      if @user && @user.username == "admin" 
+        @users = User.all
+        return true
+        CUSTOM_LOGGER.info("Showed all users")
+      else
+        redirect_to root_path
+        return false
+        CUSTOM_LOGGER.info("Failure to showed all users")
+      end
     end
 end
