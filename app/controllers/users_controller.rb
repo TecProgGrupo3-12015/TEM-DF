@@ -20,21 +20,12 @@ class UsersController < ApplicationController
     @account_status = @user.account_status
     @password = @user.password
     @password_confirmation = @user.password_confirmation
+
     # Common user create
     if @account_status == true && @password == @password_confirmation 
  			@account_status = false
-      if @user.save
-        # Generate a random number for use it in update password
-        random = Random.new
-        @user.update_attribute(:token_email, random.seed)
-        @user.update_attribute(:medic_type_status, false)
-        TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
-        flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
-        CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
-      else
-        render "new"
-      	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
-      end
+      test(@user)
+
     # Medic user create
     elsif @account_status == false && @password == @password_confirmation 
 	    if @user.save	
@@ -53,6 +44,7 @@ class UsersController < ApplicationController
         render "new"
       	CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
+
     # Return error wheter passwords are different
     else
     	flash.now.alert = "Senhas não conferem"
@@ -234,6 +226,22 @@ class UsersController < ApplicationController
         redirect_to root_path
         return false
         CUSTOM_LOGGER.info("Failure to showed all users")
+      end
+    end
+
+    def test (user)
+        if @user.save
+        # Generate a random number for use it in update password
+        random = Random.new
+        @user.update_attribute(:token_email, random.seed)
+        @user.update_attribute(:medic_type_status, false)
+        TemdfMailer.confimation_email(@user.id, @user.token_email, @user.email).deliver
+        render "new"
+        flash[:notice] = "Por favor confirme seu cadastro pela mensagem enviada ao seu email!"
+        CUSTOM_LOGGER.info("User saved #{@user.to_yaml} but not confirmed")
+      else
+        render "new"
+        CUSTOM_LOGGER.info("Failure to create user #{@user.to_yaml}")
       end
     end
 end
