@@ -4,12 +4,20 @@
 # TEM-DF Group.
 # FGA-UnB Faculdade de Engenharias do Gama - Universidade de Brasília.
 class CommentsController < ApplicationController
+	
 	# Method to report a comment
 	def reports
+
 		#Receives an object of class User of current session
 		@user = User.find_by_id(session[:remember_token])
+<<<<<<< HEAD
 		# Checks wheter the User is admin
 		if @user && @user.username == "admin"
+=======
+
+		# Checks wheter the User is admin
+		if is_user_or_admin_logging?(@user)
+>>>>>>> dev_tecprog
 			@reported_comments = Comment.all.where(report: true)
 			CUSTOM_LOGGER.info("Showed all users")
 		else
@@ -22,7 +30,7 @@ class CommentsController < ApplicationController
 	def deactivate
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:comment_status, false)
 			CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
 		else
@@ -36,7 +44,7 @@ class CommentsController < ApplicationController
 	def reactivate
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:comment_status, true)
 			CUSTOM_LOGGER.info("Comment reactivated #{@comment.to_yaml}")
 		else
@@ -50,7 +58,7 @@ class CommentsController < ApplicationController
 	def disable_report
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:report, false)
 			CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
 		else
@@ -65,4 +73,22 @@ class CommentsController < ApplicationController
 		flash.now.alert = "Erro, comentario nao encontrado."
 		redirect_to reported_comments_path
 	end
+
+	private
+	def is_user_or_admin_logging?(user)
+		if @user && @user.username == "admin"
+			true
+		else
+			false
+		end
+	end
+
+	def do_exist_comment?(comment)
+		if @comment
+			true
+		else
+			false
+		end
+	end
+
 end
