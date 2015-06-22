@@ -71,15 +71,15 @@ class UsersController < ApplicationController
       if @user.username != "admin" 
         # Check if username is in use
         test3_update(@user)
-      
+      end   
       # Admin's update
-      else 
+      if @user.username == "admin" 
         test4_update(@user)
       end
     else
+    end
       redirect_to root_path
       CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
-    end
   end
 
   # Method to update user's password
