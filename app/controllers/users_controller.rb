@@ -71,7 +71,7 @@ class UsersController < ApplicationController
       if @user.username != "admin" 
         # Check if username is in use
         test3_update(@user)
-       
+    a   
       # Admin's update
       else 
         test4_update(@user)
@@ -93,14 +93,7 @@ class UsersController < ApplicationController
       # Check whether the current password is correct
       if @user
       	# Check whether new password and confirmation password are the same
-      	if @password_confirmation == @new_password && !@new_password.blank?
-        	@user.update_attribute(:password, @new_password)
-        	redirect_to root_path, notice: "Alteração feita com sucesso"
-        	CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
-      	else
-        	redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
-        	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
-      	end
+      	test5_update_password(@user)
       else
       	redirect_to edit_password_path, alert: "Senha errada"
       	CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
@@ -259,5 +252,18 @@ class UsersController < ApplicationController
         redirect_to root_path, notice: 'Usuário alterado!'
         CUSTOM_LOGGER.info("Update user attributes #{@user.to_yaml}")
       end
+    end
+
+    def test5_update_password(user)
+      if @user
+        # Check whether new password and confirmation password are the same
+        if @password_confirmation == @new_password && !@new_password.blank?
+          @user.update_attribute(:password, @new_password)
+          redirect_to root_path, notice: "Alteração feita com sucesso"
+          CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
+        else
+          redirect_to edit_password_path, alert: "Confirmação não confere ou campo vazio"
+          CUSTOM_LOGGER.info("Failure to update password #{@user.to_yaml}")
+        end
     end
 end
