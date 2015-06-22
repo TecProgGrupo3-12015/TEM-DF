@@ -12,7 +12,7 @@ class CommentsController < ApplicationController
 		@user = User.find_by_id(session[:remember_token])
 
 		# Checks wheter the User is admin
-		if is_user_or_admin_logging?(user)
+		if is_user_or_admin_logging?(@user)
 			@reported_comments = Comment.all.where(report: true)
 			CUSTOM_LOGGER.info("Showed all users")
 		else
@@ -25,7 +25,7 @@ class CommentsController < ApplicationController
 	def deactivate
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:comment_status, false)
 			CUSTOM_LOGGER.info("Comment deactivated #{@comment.to_yaml}")
 		else
@@ -39,7 +39,7 @@ class CommentsController < ApplicationController
 	def reactivate
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:comment_status, true)
 			CUSTOM_LOGGER.info("Comment reactivated #{@comment.to_yaml}")
 		else
@@ -53,7 +53,7 @@ class CommentsController < ApplicationController
 	def disable_report
 		#Receives an object of class User of current session
 		@comment = Comment.find_by_id(params[:comment_id])
-		if @comment
+		if do_exist_comment?(@comment)
 			@comment.update_attribute(:report, false)
 			CUSTOM_LOGGER.info("Comment report disabled #{@comment.to_yaml}")
 		else
@@ -78,4 +78,11 @@ class CommentsController < ApplicationController
 		end
 	end
 
+	def do_exist_comment?(comment)
+		if @comment
+			true
+		else
+			false
+		end
+	end
 end
