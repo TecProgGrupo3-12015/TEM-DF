@@ -22,14 +22,18 @@ class UsersController < ApplicationController
     @password_confirmation = @user.password_confirmation
 
     # Common user create
-    if @account_status == true && @password == @password_confirmation 
+    is_common_user_account = @account_status == true && @password == @password_confirmation 
+
+    if is_common_user_account 
  			@account_status = false
       create_user(@user)
     else
     end
 
     # Medic user create
-    if @account_status == false && @password == @password_confirmation 
+    is_medic_user_account = @account_status == false && @password == @password_confirmation
+
+    if  is_medic_user_account
 	    create_user_medic(@user)
     else
     end  
@@ -65,7 +69,9 @@ class UsersController < ApplicationController
     @user_from_username = User.find_by_username(@username)
     @user_from_email = User.find_by_email(@email)
 
-    if @user
+    exist_user = @user
+
+    if exist_user
 
     	# Commom user's update 
       if @user.username != "admin" 
@@ -89,7 +95,9 @@ class UsersController < ApplicationController
     @new_password = params[:user][:new_password]
 		@password_confirmation = params[:user][:password_confirmation]
     # Check whether the user is logged
-    if @user_session
+    exist_user_logged = @user_session
+    if exist_user_logged
+
       # Check whether the current password is correct
       if @user
       	# Check whether new password and confirmation password are the same
@@ -107,8 +115,10 @@ class UsersController < ApplicationController
   # Method to desactivate a user
   def deactivate
     @user = User.find_by_id(session[:remember_token])
-     # User's deactivate
-    if @user && @user.username != "admin"
+
+    # User's deactivate
+    exist_user_and_not_is_admin = @user && @user.username != "admin"
+    if exist_user_and_not_is_admin
       @user.update_attribute(:account_status, false)
       redirect_to logout_path
       CUSTOM_LOGGER.info("User deactivated #{@user.to_yaml}")
@@ -121,6 +131,7 @@ class UsersController < ApplicationController
   # Method to reactivate a user
   def reactivate
     @user = User.find_by_id(params[:id])
+
     if @user
       @user.update_attribute(:account_status, true)
       redirect_to(action: "index")
@@ -135,8 +146,11 @@ class UsersController < ApplicationController
   def confirmation_email
     @user = User.find_by_id_and_token_email(params[:id],params[:token_email])
     @message = ""
+
     # Check if the user and token email are equivalent
-    if @user && @user.token_email
+    is_the_token_email_equal_user = @user && @user.token_email
+
+    if is_the_token_email_equal_user 
       @user.update_attribute(:account_status, true)
       @user.update_attribute(:token_email, nil)
       @message = "Cadastro Confirmado!"
