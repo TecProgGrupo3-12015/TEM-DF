@@ -17,9 +17,8 @@ class SessionsController < ApplicationController
     # Check the User existence and if your account is active
     is_user_is_active = user && user.account_status == true
     if is_user_is_active
-      user_id = user.id
-      session[:remember_token] = user_id
-      session[:user_id] = user_id
+      session[:remember_token] = user.id
+      session[:user_id] = user.id
       redirect_to root_path, :notice => "Seja bem vindo!"
       CUSTOM_LOGGER.info("Created session user #{user.to_yaml}")
     else
