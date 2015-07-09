@@ -15,7 +15,9 @@ class PasswordResetsController < ApplicationController
 		
 		# Condition wich verify the user and send a email for reset his password.
 		# If user exists, email will send, else, show alert.
-		if @user
+		user_send_reset_password = @user
+		
+		if user_send_reset_password
 			@user.send_password_reset 
 			redirect_to root_path, :notice => "Um e-mail foi enviado com as instruções para #{:email}."
 		else
@@ -26,9 +28,9 @@ class PasswordResetsController < ApplicationController
 	# Method to redirect after password change
 	def edit
 		@user = User.find_by_password_reset_token(params[:id])
-		
-		#REVIEW:this conditional should not be different?
-		if !@user
+		is_password_already_changed = !@user
+
+		if is_password_already_changed
 			redirect_to root_url, :notice => "A senha já foi alterada."
 		else
 			# Nothing to do	
@@ -39,17 +41,20 @@ class PasswordResetsController < ApplicationController
 	def update
 		@user = User.find_by_password_reset_token!(params[:id])
 
-		# REVIEW: This conditional be not a default behavior. Invert
-		if @user.password_reset_sent_at < 2.hours.ago
-			redirect_to new_password_reset_path, :alert => "O link de redefinição de senha expirou."
-		else
+		is_token_password_reset_is_not_expired = @user.password_reset_sent_at > 2.hours.ago
+
+		if is_token_password_reset_is_expired
 			new_password = params[:user][:password]
-			if new_password == params[:user][:password_confirmation]
+			is_same_password_with_password_confirmation = new_password == params[:user][:password_confirmation]
+
+			if is_same_password_with_password_confirmation
 				@user.update_attribute(:password, new_password)
 				@user.update_attribute(:password_reset_token, nil)
 				redirect_to root_url, :notice => "Senha Redefinida!"			
 			else
 				redirect_to edit_password_reset_path, :alert => "Senha e Confirmação não conferem"
+		else
+			redirect_to new_password_reset_path, :alert => "O link de redefinição de senha expirou."
 			end			
 		end
 	end
