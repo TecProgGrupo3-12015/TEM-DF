@@ -13,9 +13,10 @@ class ParsersController < ApplicationController
 
 	# Upload schedule.csv file in the database
  	def upload
-		document = params[:document]
+		exist_csv_medical_schedule_document = params[:document]
+		
 		# Checks for document and starts the parser
-		if document
+		if exist_csv_medical_schedule_document
 			file_path = Rails.root.join('public', 'csv', 'schedules.csv')
 			File.open(file_path , 'wb') {     
 				|file| file.write(document.read)
