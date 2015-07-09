@@ -182,8 +182,11 @@ class UsersController < ApplicationController
 
     private
 
+    # Atomic methods for controllers use it
     def show_all_users(user)
-      if @user && @user.username == "admin" 
+      is_user_a_admin = @user && @user.username == "admin"
+
+      if  is_user_a_admin
         @users = User.all
         CUSTOM_LOGGER.info("Showed all users")
         true
@@ -213,8 +216,10 @@ class UsersController < ApplicationController
 
     def create_user_medic (user)
       if @user.save 
+
         #Verify whether document is present
-        if @document
+        exist_document_of_medic = @document
+        if exist_document_of_medic
           upload @document
           @user.update_attribute(:medic_type_status, true)
           flash[:notice] = "Nossa equipe vai avaliar seu cadastro. Por favor aguarde a nossa aprovação para acessar sua conta!"
@@ -231,15 +236,22 @@ class UsersController < ApplicationController
     end
 
     def user_update(user)
-       if @user_from_username && @user != @user_from_username
+
+      username_already_exist_on_database = @user_from_username && @user != @user_from_username
+
+      if username_already_exist_on_database
         flash[:alert] = "Nome já existente"
         render "edit"
         CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+
         # Check if the email is in use
-      elsif @user_from_email && @user != @user_from_email
+      email_already_exist_on_database = @user_from_email && @user != @user_from_email  
+
+      elsif email_already_exist_on_database
         flash[:alert] = "Email já existente"
         render "edit" 
         CUSTOM_LOGGER.info("Failure to update user #{@user.to_yaml}")
+
         # If not update attributes
       else 
         @user.update_attribute(:username , @username)
@@ -264,7 +276,9 @@ class UsersController < ApplicationController
     def update_password(user)
       if @user
         # Check whether new password and confirmation password are the same
-        if @password_confirmation == @new_password && !@new_password.blank?
+        password_ok_with_his_confirmation_and_not_blank_field = @password_confirmation == @new_password && !@new_password.blank?
+
+        if password_ok_with_his_confirmation_and_not_blank_field 
           @user.update_attribute(:password, @new_password)
           redirect_to root_path, notice: "Alteração feita com sucesso"
           CUSTOM_LOGGER.info("Update user password #{@user.to_yaml}")
