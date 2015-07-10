@@ -7,6 +7,7 @@
 class HomeController < ApplicationController
 	def about 
 	end
+	
 	def index
 		@reported_comment_size = Comment.all.where(report: true).size
 		@deactivated_user_size = User.all.where(account_status: false).size
